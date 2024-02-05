@@ -38,27 +38,11 @@ let exercise1d : int list -> bool =
     | [] -> false
     | hd :: _ -> hd < hd + 1 ;;
 
-(* Here we deconstruct our argument as a list, so the argument `lst` 
-   must be of of type `___ list` (consistent with its name). In the
-   second match case, we compare the head of the list with itself plus
-   one. We use integer addition, so the head must be of type
-   `int`. All elements of a list must be of the same type, so the
-   argument is of type `int list`. To determine the type of the
-   result, we can look to the first match case. The literal `false` is
-   of type `bool`. All match cases must return the same type, so the
-   result must be of type `bool`. *)
 
 let exercise1e : bool -> bool list =
   fun x -> if x then [x] else [] ;;
 
-(* The reasoning goes like this: The argument of the function is
-   `x`. Since `x` is used as the condition part of an `if` expression,
-   it must be of type bool. Thus the expression in the `then` clause
-   `[x]` must be a `bool list`, and since the type of an `if` expression
-   is the type of its `then` and `else` expressions, the whole `if`
-   expression, the result of the function, must be a `bool list`. The
-   function itself is then of function type `bool -> bool list`, as is
-   the value named `exercise1e`. *)
+
 
 (*......................................................................
 Exercise 2: Update each expression below by changing the 0 in the last
@@ -119,13 +103,7 @@ let third_element (lst : int list) : bool * int =
   | _ :: _ :: elt3 :: _ -> true, elt3
   | _ -> false, 0 ;;
 
-(* Because we never use the first two elements or the tail of the
-   list, naming the variables is unnecessary, so we can use anonymous
-   variables (_) as shown above. 
-   
-   The order of the two match cases is crucial. If they are flipped, 
-   the second match case will never be invoked, since the first 
-   match case will always match. *)
+
 
 (*======================================================================
 Part 2: First-order functional programming with lists
@@ -201,38 +179,7 @@ pattern-matching is not exhaustive." You may ignore this warning for
 this lab.
 ......................................................................*)
 
-(* Here's a first cut at a solution, using just the portion of OCaml
-   already introduced. Notice that there's no branch in the pattern
-   match that matches the empty list, because there is no maximum
-   element in the empty list! For that reason, the ocaml interpreter
-   warns us with an "inexhaustive pattern match" warning.
 
-      let rec max_list (lst : int list) : int =
-        match lst with
-        | [elt] -> elt
-        | head :: tail ->
-           let max_tail = max_list tail in
-           if head > max_tail then head else max_tail ;;
-
-   This is the solution we expected people to come up with. And it
-   seems to work.
-
-      # max_list [1; 3; 2] ;;
-      - : int = 3
-
-   What happens when we apply this function to the empty list?
-
-      # max_list [] ;;
-      Exception: Match_failure ("//toplevel//", 2, 2).
-
-   It generates a `Match_failure` exception. (We'll talk more about
-   error handling and exceptions later in the course, and use them
-   starting in Lab 4.) This `Match_failure` exception is a symptom of
-   a deeper underlying problem, namely, that the function `max_list`
-   was called with an invalid argument. A better solution, then, and
-   one that not coincidentally eliminates the "inexhaustive pattern
-   match" warning, is to explicitly raise a more appropriate exception
-   like `Invalid_argument`, as we've done in the solution below. *)
 
 let rec max_list (lst : int list) : int =
   match lst with
@@ -242,15 +189,6 @@ let rec max_list (lst : int list) : int =
      let max_tail = max_list tail in
      if head > max_tail then head else max_tail ;;
 
-(* It turns out that the `Stdlib` module has a `max` function that
-   returns the larger of its two arguments. Using that function, we
-   can simplify a bit.
-
-    let rec max_list (lst : int list) : int =
-      match lst with
-      | [elt] -> elt
-      | head :: tail -> max head (max_list tail) ;;
- *)
 
 (*......................................................................
 Exercise 7: Define a function `zip`, that takes two `int list`
@@ -276,13 +214,6 @@ let rec zip (x : int list) (y : int list) : (int * int) list =
   | [], [] -> []
   | xhd :: xtl, yhd :: ytl -> (xhd, yhd) :: (zip xtl ytl) ;;
 
-(* This was the solution we expected people to come up with. It
-   generates a warning about the pattern match not being
-   exhaustive. As in `max_list` above, the ramifications of this issue
-   and how best to address it are discussed at length in Chapter 10,
-   Section 10.2.That discussion is beyond the scope of lab 2, but feel
-   free to read ahead if you're interested. *)
-
 (*......................................................................
 Exercise 8: Recall from Chapter 7 the definition of the function `prods`.
  *)
@@ -291,28 +222,7 @@ let rec prods (lst : (int * int) list) : int list =
   match lst with
   | [] -> []
   | (x, y) :: tail -> (x * y) :: (prods tail) ;;
-  
-(* Using `sum`, `prods`, and `zip`, define a function `dotprod` that
-takes the dot product of two integer lists (that is, the sum of the
-products of corresponding elements of the lists; see
-https://en.wikipedia.org/wiki/Dot_product if you want more
-information, though it shouldn't be necessary). For example, you
-should have:
 
-    # dotprod [1; 2; 3] [0; 1; 2] ;;
-    - : int = 8
-    # dotprod [1; 2] [5; 10] ;;
-    - : int = 25
-
-Even without looking at the code for the functions, carefully looking
-at the type signatures for `zip`, `prods`, and `sum` should give a
-good idea of how you might combine these functions to implement
-`dotproduct`.
-
-If you've got the right idea, your implementation should be literally
-a single short line of code. If it isn't, try it again, getting into
-the functional programming zen mindset.
-......................................................................*)
 
 let dotprod (a : int list) (b : int list) : int =
   sum (prods (zip a b)) ;;
@@ -376,45 +286,6 @@ Exercise 9: Reimplement `sum` using `fold_left`, naming it `sum_ho`
 let sum_ho : int list -> int =
   List.fold_left (+) 0 ;;
 
-(* One of the key advantages of curried functions (like `fold_left`)
-   is that they can be partially applied. (See Section 8.2 in the
-   textbook.) We've taken advantage of that in the definition above,
-   by defining `sum_ho` as a partially applied `fold_left`, rather
-   than as
-
-     let sum_ho (lst : int list) : int =
-       List.fold_left (+) 0 lst ;;
-
-   The latter will work, but lacks the elegance of the more idiomatic
-   approach here.
-
-   The same technique is used in the exercises below. It may be
-   useful, in order to understand what's going on, to try typing in
-   longer and longer prefixes of an expression like `List.fold_left
-   (+) 0 [1; 2; 3]` and watch the types closely.
-
-     # List.fold_left ;;
-     - : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a = <fun>
-     # List.fold_left (+) ;;
-     - : int -> int list -> int = <fun>
-     # List.fold_left (+) 0 ;;
-     - : int list -> int = <fun>
-     # List.fold_left (+) 0 [1; 2; 3] ;;
-     - : int = 6
-
-   You may also note the use of parentheses in the expression
-   `(+)`. The `+` operator is an example of an "infix" operator, an
-   operator that goes in between its arguments rather than in front of
-   them. When using `+` as an argument to higher-order functions, we
-   generally need to remove that infix property, so that it will be
-   parsed as a prefix operator like most other functions. Wrapping the
-   operator in parentheses induces this behavior.
-
-     # 3 + 4 ;;
-     - : int = 7
-     # (+) 3 4
-     - : int = 7
- *)
 
 (*......................................................................
 Exercise 10: Reimplement prods : `(int * int) list -> int list` using
@@ -438,14 +309,6 @@ Use `map2` to reimplement `zip` and call it `zip_ho`.
 let zip_ho : int list -> int list -> (int * int) list =
   List.map2 (fun first second -> first, second) ;;
 
-(* Note the rejiggering of the first line to allow the function
-   `zip_ho` to take advantage of partial application, so that `zip_ho`
-   is the functional output of the higher-order function
-   `map2`. Without the rejiggering, you'd probably implement it as:
-
-    let zip_ho (x : int list) (y : int list) : (int * int) list =
-      List.map2 (fun first second -> first, second) x y ;;
- *)
 
 (*......................................................................
 Exercise 12: Define a function `evens`, using these higher-order
@@ -456,12 +319,7 @@ even numbers in its argument list in the same order. For instance,
     - : int list = [2; 6; 4]
 ......................................................................*)
 
-(* Again, without partial application: 
-    
-    let evens (lst : int list) : int list =
-      List.filter (fun n -> n mod 2 = 0) lst;;
 
-   and with partial application: *)
   
 let evens : int list -> int list =
   List.filter (fun n -> n mod 2 = 0) ;;
